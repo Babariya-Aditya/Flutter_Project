@@ -4,6 +4,7 @@ import 'package:adi_project/Project-1/DataBase/dbHelper.dart';
 import 'package:adi_project/Project-1/Modal/category.dart';
 import 'package:adi_project/Project-1/Screens/Category/Components/Category_Screen.dart';
 import 'package:adi_project/Project-1/Screens/Category_List/Components/Category_List.dart';
+import 'package:adi_project/Project-1/Screens/Product/Components/Product_Screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -30,7 +31,7 @@ class _BodyState extends State<Body> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    getCategoryList();
+
   }
 
   @override
@@ -41,7 +42,7 @@ class _BodyState extends State<Body> {
             var category = await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => CategoryScreen(),
+                builder: (context) => ProdcutScreen(),
               ),
             );
             if (category is Category) {

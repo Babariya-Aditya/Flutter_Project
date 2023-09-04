@@ -4,16 +4,13 @@ import 'package:adi_project/Project-1/Screens/Home/Components/body.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
+  String? firstName,email;
+  HomeScreen({this.firstName,this.email});
+ @override
 
-  //HomeScreen(String email, String firstName);
-
-
-  //const HomeScreen(Type userData, {super.key});
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: HomeDrawer(),
+      drawer: HomeDrawer(firstName,email),
 
       body: Body(),
 

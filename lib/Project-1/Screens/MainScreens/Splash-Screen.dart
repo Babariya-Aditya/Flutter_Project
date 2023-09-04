@@ -4,6 +4,7 @@ import 'package:adi_project/Project-1/Screens/Home/Home.dart';
 import 'package:adi_project/Project-1/Screens/Sign_in/Sigin_Screen.dart';
 import 'package:adi_project/Project-1/Screens/onboarding/on_boarding.dart';
 import 'package:adi_project/Project-1/preferences/prefutils.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'HomePage.dart';
@@ -21,18 +22,38 @@ class _SplashState extends State<Splash> {
     // TODO: implement initState
     super.initState();
     Timer(Duration(seconds: 3), () {
-     if(PrefUtils.getLoginStatus()){
-       Navigator.pushReplacement(
-           context, MaterialPageRoute(builder: (context) => HomeScreen()));
-     }
-     else if(PrefUtils.getOnboardingstatus()){
-       Navigator.pushReplacement(
-           context, MaterialPageRoute(builder: (context) => SiginForm()));
-     }
-     else{
-       Navigator.pushReplacement(
-           context, MaterialPageRoute(builder: (context) => onboarding()));
-     }
+      FirebaseAuth.instance.authStateChanges().listen((User? user) {
+        if (user != null) {
+          // login
+          Navigator.pushReplacement(
+                    context, MaterialPageRoute(builder: (context) => HomeScreen()));
+        } else {
+          // logout
+          if (PrefUtils.getOnboardingstatus()) {
+            // navigate to signIn
+            Navigator.pushReplacement(
+                        context, MaterialPageRoute(builder: (context) => SiginForm()));
+          } else {
+            // navigate to on boarding
+
+            Navigator.pushReplacement(
+                           context, MaterialPageRoute(builder: (context) => onboarding()));
+          }
+        }
+      });
+
+     // if(PrefUtils.getLoginStatus()){
+     //   Navigator.pushReplacement(
+     //       context, MaterialPageRoute(builder: (context) => HomeScreen()));
+     // }
+     // else if(PrefUtils.getOnboardingstatus()){
+     //   Navigator.pushReplacement(
+     //       context, MaterialPageRoute(builder: (context) => SiginForm()));
+     // }
+     // else{
+     //   Navigator.pushReplacement(
+     //       context, MaterialPageRoute(builder: (context) => onboarding()));
+     // }
     });
   }
 

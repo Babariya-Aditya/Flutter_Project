@@ -1,7 +1,9 @@
 
 import 'package:adi_project/Project-1/Screens/Home/Home.dart';
 import 'package:adi_project/Project-1/Utils/utils.dart';
+import 'package:adi_project/Project-1/firebase/firebase_services.dart';
 import 'package:adi_project/Project-1/preferences/prefutils.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Sigin extends StatefulWidget {
@@ -17,9 +19,9 @@ class _SiginState extends State<Sigin> {
    var PasswordError = null;
 
   var EmailError = null;
+FirebaseService _service=FirebaseService();
 
-
-  LoginButton() {
+  LoginButton(BuildContext context) {
     return MaterialButton(
 
       height: 50,
@@ -33,6 +35,7 @@ class _SiginState extends State<Sigin> {
         String email=EmailController.text.toString().trim();
         String password=PasswordController.text.toString().trim();
         resetFocus();
+
         if(email.isEmpty||!Utils.isvalidEmail(email)){
           setState(() {
             EmailError='Enter a valid email';
@@ -47,13 +50,15 @@ class _SiginState extends State<Sigin> {
 
         }
         else{
-          PrefUtils.UpdateLoginStatus(true).then((value) {
-            if(value){
-              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeScreen()), (route) => false);
-            }
-          });
-
-          }
+          login(email,password,context);
+        }
+          // PrefUtils.UpdateLoginStatus(true).then((value) {
+          //   if(value){
+          //     Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeScreen()), (route) => false);
+          //   }
+          // });
+          //
+          // }
 
 
         //Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen(),));
@@ -87,7 +92,7 @@ class _SiginState extends State<Sigin> {
         SizedBox(
           height: 28,
         ),
-        LoginButton()
+        LoginButton(context)
       ],
     ));
 
@@ -140,5 +145,21 @@ class _SiginState extends State<Sigin> {
   void resetFocus() {
     PasswordError=null;
     EmailError=null;
+  }
+
+  Future<void> login(String email, String password, BuildContext context) async {
+
+      final credential = await _service.login(email, password);
+
+      if(credential is UserCredential){
+        if(credential.user!=null){
+          Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen(),));
+        }
+      } else if(credential is String){
+        print("credential :$credential");
+
+      }
+
+
   }
 }

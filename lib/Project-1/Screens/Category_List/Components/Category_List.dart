@@ -10,9 +10,6 @@ class CategoryList extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text("Category List"),centerTitle: true,),
 
-      floatingActionButton: FloatingActionButton(onPressed: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => CategoryScreen(),));
-      },backgroundColor: Colors.indigo,child: Icon(Icons.add),),
       body: Body(),
 
     );

@@ -1,8 +1,11 @@
 import 'dart:math';
 
+import 'package:adi_project/Project-1/Modal/app_User.dart';
 import 'package:adi_project/Project-1/Screens/Home/Components/SignUp-User-Data/UserData.dart';
 import 'package:adi_project/Project-1/Screens/Home/Home.dart';
 import 'package:adi_project/Project-1/Utils/utils.dart';
+import 'package:adi_project/Project-1/firebase/firebase_services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,9 +16,11 @@ class SigupForm extends StatefulWidget {
 }
 
 class _SigupFormState extends State<SigupForm> {
-  String gender = "Male";
+  String gender = " ";
+  FirebaseService _service = FirebaseService();
   final _formkey = GlobalKey<FormState>();
   bool passwordview = true;
+  String userType = '';
   var dobController = TextEditingController();
   var FirstNameControllerController = TextEditingController();
   var LastNameController = TextEditingController();
@@ -32,6 +37,13 @@ class _SigupFormState extends State<SigupForm> {
   }
 
   String dob = '';
+  @override
+  void dispose() {
+    EmailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +89,7 @@ class _SigupFormState extends State<SigupForm> {
             SizedBox(
               height: 26,
             ),
-            buildSignUpButtonWidget()
+            buildSignUpButtonWidget(context)
           ],
         ),
       ),
@@ -89,41 +101,41 @@ class _SigupFormState extends State<SigupForm> {
       children: [
         Expanded(
             child: TextFormField(
-          controller: FirstNameControllerController,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'First Name ';
-            } else {
-              return null;
-            }
-          },
-          keyboardType: TextInputType.name,
-          textInputAction: TextInputAction.next,
-          decoration: InputDecoration(
-            hintText: "First Name",
-            labelText: "First Name",
-          ),
-        )),
+              controller: FirstNameControllerController,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'First Name ';
+                } else {
+                  return null;
+                }
+              },
+              keyboardType: TextInputType.name,
+              textInputAction: TextInputAction.next,
+              decoration: InputDecoration(
+                hintText: "First Name",
+                labelText: "First Name",
+              ),
+            )),
         SizedBox(
           width: 16,
         ),
         Expanded(
             child: TextFormField(
-          controller: LastNameController,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Last Name ';
-            } else {
-              return null;
-            }
-          },
-          textInputAction: TextInputAction.next,
-          keyboardType: TextInputType.name,
-          decoration: InputDecoration(
-            hintText: "Last Name",
-            labelText: "Last Name",
-          ),
-        )),
+              controller: LastNameController,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Last Name ';
+                } else {
+                  return null;
+                }
+              },
+              textInputAction: TextInputAction.next,
+              keyboardType: TextInputType.name,
+              decoration: InputDecoration(
+                hintText: "Last Name",
+                labelText: "Last Name",
+              ),
+            )),
       ],
     );
   }
@@ -172,33 +184,33 @@ class _SigupFormState extends State<SigupForm> {
         Text("Gender"),
         Expanded(
             child: RadioListTile(
-          value: "Male",
-          groupValue: gender,
-          onChanged: (value) {
-            updateGenderSelection(value.toString());
-          },
-          // title: Text("Male",),
-        )),
+              value: "Male",
+              groupValue: gender,
+              onChanged: (value) {
+                updateGenderSelection(value.toString());
+              },
+              // title: Text("Male",),
+            )),
         Text("male"),
         Expanded(
             child: RadioListTile(
-          value: "Female",
-          groupValue: gender,
-          onChanged: (value) {
-            updateGenderSelection(value.toString());
-          },
-          //  title: Text("Female"),
-        )),
+              value: "Female",
+              groupValue: gender,
+              onChanged: (value) {
+                updateGenderSelection(value.toString());
+              },
+              //  title: Text("Female"),
+            )),
         Text("Female"),
         Expanded(
             child: RadioListTile(
-          value: "other",
-          groupValue: gender,
-          onChanged: (value) {
-            updateGenderSelection(value.toString());
-          },
-          // title: Text("other"),
-        )),
+              value: "other",
+              groupValue: gender,
+              onChanged: (value) {
+                updateGenderSelection(value.toString());
+              },
+              // title: Text("other"),
+            )),
         Text("other")
       ],
     );
@@ -208,13 +220,16 @@ class _SigupFormState extends State<SigupForm> {
     return DropdownButtonFormField(
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return ' Enter valid User Type ';
+          return 'Select user type';
         } else {
           return null;
         }
       },
+      onSaved: (newValue) {
+        userType = newValue.toString();
+      },
       decoration:
-          InputDecoration(hintText: "Select User", labelText: "Select User"),
+      InputDecoration(hintText: "Select User", labelText: "Select User"),
       items: [
         DropdownMenuItem(value: "User", child: Text("User")),
         DropdownMenuItem(value: "Admin", child: Text("Admin"))
@@ -297,7 +312,7 @@ class _SigupFormState extends State<SigupForm> {
     );
   }
 
-  buildSignUpButtonWidget() {
+  buildSignUpButtonWidget(BuildContext context) {
     return MaterialButton(
       color: Colors.indigoAccent,
       minWidth: double.infinity,
@@ -309,23 +324,37 @@ class _SigupFormState extends State<SigupForm> {
         String Email = EmailController.text.toString().trim();
         int Contact = int.parse(ContactController.text.toString().trim());
         String Address = AdressController.text.toString().trim();
+        String Dob = dobController.text.toString().trim();
         String password = passwordController.text.toString().trim();
         String ConfirmPassword =
-            ConfirmPasswordController.text.toString().trim();
-        UserData.setdata(
-            Address: Address,
-            ConfirmPassword: ConfirmPassword,
-            Contact: Contact,
-            Email: Email,
+        ConfirmPasswordController.text.toString().trim();
+        String UserType = userType;
+        String Gender=gender;
+        // UserData.setdata(
+        //     Address: Address,
+        //     ConfirmPassword: ConfirmPassword,
+        //     Contact: Contact,
+        //     Email: Email,
+        //     LastName: LastName,
+        //     password: password,
+        //     FirstName: FirstName);
+        // Navigator.push(context, MaterialPageRoute(builder: (context) =>
+        //     HomeScreen(email: Email, firstName: FirstName),));
+
+        // if (_formkey.currentState!.validate()) {
+        //
+        // }
+        var user = AppUser(Gender: gender,
             LastName: LastName,
-            password: password,
-            FirstName: FirstName);
-        Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen(),));
-        
-
-        if (_formkey.currentState!.validate()) {
-
-        }
+            ConfirmPassword: ConfirmPassword,
+            Address: Address,
+            Contact: Contact,
+            Dob: Dob,
+            Email: Email,
+            FirstName: FirstName,
+            Password: password,
+            UserType: UserType);
+        createAccount(user, context);
       },
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -349,6 +378,28 @@ class _SigupFormState extends State<SigupForm> {
           dob = '${dates.day}/${dates.month}/${dates.year}';
           dobController.text = dob;
         });
+      }
+    }
+  }
+
+  Future<void> createAccount(AppUser user, BuildContext context) async {
+    final credential = await _service.signUp(user.Email!, user.Password!);
+    if (credential is UserCredential) {
+      if (credential.user != null) {
+        print(
+            'uid : ${credential.user!.uid}    email : ${credential.user!
+                .email}');
+        user.id = credential.user!.uid;
+        _service.CreateUser(user).then((value) =>
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => HomeScreen(),
+                ))).catchError((error) {
+          print(error);
+        });
+      } else if (credential is String) {
+        print(credential);
       }
     }
   }
